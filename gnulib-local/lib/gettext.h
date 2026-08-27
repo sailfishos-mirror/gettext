@@ -42,9 +42,7 @@
 /* Solaris /usr/include/locale.h includes /usr/include/libintl.h, which
    chokes if dcgettext is defined as a macro.  So include it now, to make
    later inclusions of <locale.h> a NOP.  We don't include <libintl.h>
-   as well because people using "gettext.h" will not include <libintl.h>,
-   and also including <libintl.h> would fail on SunOS 4, whereas <locale.h>
-   is OK.  */
+   as well because people using "gettext.h" will not include <libintl.h>.  */
 # if defined(__sun)
 #  include <locale.h>
 # endif
@@ -84,17 +82,32 @@
    ================================ foo.c ================================
    #include <stdio.h>
    #include "gettext.h"
+   extern const char *some_computed_string (void);
+
    void foo (int n)
    {
+     textdomain ("pkg");
+     bindtextdomain ("pkg", "/usr/share/locale");
+     bind_textdomain_codeset ("pkg", "UTF-8");
+
      printf (gettext ("foo %d"), n);
      printf (dgettext ("toto", "foo %d"), n);
      printf (dcgettext ("toto", "foo %d", LC_MESSAGES), n);
      printf (ngettext ("foo %d", "bar %d", n), n);
      printf (dngettext ("toto", "foo %d", "bar %d", n), n);
      printf (dcngettext ("toto", "foo %d", "bar %d", n, LC_MESSAGES), n);
+
+     printf ("%s", gettext ("between 7% & 19%."));
+     printf ("%s", dgettext ("toto", "between 7% & 19%."));
+     printf ("%s", dcgettext ("toto", "between 7% & 19%.", LC_MESSAGES));
+
+     printf (gettext (some_computed_string ()));
+     printf (dgettext ("toto", some_computed_string ()));
+     printf (dcgettext ("toto", some_computed_string (), LC_MESSAGES));
    }
    =======================================================================
    $CC -Wformat=2 -S foo.c
+   $CC -Wformat=2 -S -x c++ foo.c
  */
 # if defined __GNUC__ && !defined __clang__ && !defined __cplusplus
 /* The return type 'const char *' serves the purpose of producing warnings
